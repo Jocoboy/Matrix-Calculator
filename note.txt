@@ -1,0 +1,7 @@
+            ┌── linewrapItem
+    ┌── setMenu 
+    |       └── resetItem 
+menuBar 
+    |       ┌── helpItem
+    └── getMenu 
+            └── abouItem
