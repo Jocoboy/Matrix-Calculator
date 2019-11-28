@@ -81,7 +81,7 @@ public class MatrixArith {
         int column = matrixA.array[0].length;
 
         Matrix outputMatrix = null;
-        double[][] outputArray = new double[MatrixA.array.length][MatrixB.array[0].length];
+        double[][] outputArray = new double[matrixA.array.length][matrixB.array[0].length];
 
         if (column != row) {
             outputArray = null;
@@ -166,7 +166,7 @@ public class MatrixArith {
                             for (int j = 0; j < row * 2; j++) {
                                 double temp = expandArray[i][j];
                                 expandArray[i][j] = expandArray[k][j];
-                                expandArray = temp;
+                                expandArray[k][j] = temp;
                             }
                             break;
                         }
