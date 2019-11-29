@@ -1,6 +1,7 @@
 import javax.swing.*;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
+
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 
@@ -84,7 +85,7 @@ public class MainWindow extends JFrame {
             return false;
         }
 
-        public Matrix IsStandardMatrix(String input) {
+        public Matrix isStandardMatrix(String input) {
             int row = 0;
             for (int i = 0; i < input.length(); i++) {
                 if (input.charAt(i) == ';') {
@@ -149,6 +150,19 @@ public class MainWindow extends JFrame {
             return false;
         }
 
+        public Matrix evaluateExpression(String expression) throws MatrixArithException {
+            Matrix outputMatrix = null;
+            // TO DO
+
+            return outputMatrix;
+        }
+
+        @Override
+        public void append(String msg) {
+            super.append(msg);
+            textBuffer.append(msg);
+        }
+
         @Override
         public void caretUpdate(CaretEvent e) {
             currentDot = e.getDot();
@@ -177,7 +191,13 @@ public class MainWindow extends JFrame {
                 if (input.equals("exit")) {
                     this.append("Bye!");
                     System.exit(0);
-                } else if (input.equals("del all") || input.equals("delete all") || input.equals("DEL ALL")
+                }
+                else if(input.equals("cls")||input.equals("clear")||input.equals("CLS")||input.equals("CLEAR")){
+                    this.setText("");
+                    textBuffer.delete(0, textBuffer.length());
+                    this.append(">>");
+                }
+                 else if (input.equals("del all") || input.equals("delete all") || input.equals("DEL ALL")
                         || input.equals("DELETE ALL")) {
                     J211.setText("");
                     ptr_workspace = 0;
@@ -194,13 +214,13 @@ public class MainWindow extends JFrame {
                 } else if (Pattern.matches(pattern, input)) {
                     System.out.println("Pattern matched!");
 
-                    if (IsStandardMatrix(input) == null) {
+                    if (isStandardMatrix(input) == null) {
                         System.out.println("Invalid input.");
                         this.append("\n\n");
                         this.append(">>");
                     } else {
                         System.out.println("Valid input.");
-                        Matrix matrix = IsStandardMatrix(input);
+                        Matrix matrix = isStandardMatrix(input);
                         int row = matrix.array.length;
                         int column = matrix.array[0].length;
                         System.out.println(matrix.name + ":");
@@ -269,11 +289,88 @@ public class MainWindow extends JFrame {
                         this.append(">>");
                     }
                 } else if (Pattern.matches(pattern_inv, input)) {
+                    String name="";
+                    Matrix ouputMatrix= null;
+                    try{
+                        int l_pos = input.indexOf("(");
+                        int r_pos = input.indexOf(")");
+                        name = input.substring(l_pos+1,r_pos).replace(" ", "");
 
+                        for(int i = 0 ; i <ptr_workspace;i++){
+                            if(matrixBuffer[i].name.equals(name)){
+                                ouputMatrix = MatrixArith.inv(matrixBuffer[i]);
+                                break;
+                            }
+                            else{
+                                if(i == ptr_workspace -1){
+                                    ouputMatrix = new Matrix("null", null);
+                                    throw new MatrixArithException("Matrix \""+name+"\" is undefined!");
+                                }
+                            }
+                        }
+
+                        String commandText = "";
+                        NumberFormat nFormat=NumberFormat.getNumberInstance(); 
+					    nFormat.setMaximumFractionDigits(2);
+					    nFormat.setMinimumFractionDigits(2);
+                        for(int i = 0 ; i < ouputMatrix.array.length;i++){
+                            for(int j = 0 ; j < ouputMatrix.array[0].length;j++){
+                                commandText += nFormat.format(ouputMatrix.array[i][j] +" ");
+                            }
+                            commandText += "\n";
+                        }
+                        this.append(commandText);
+                        this.append("\n\n");
+                        this.append(">>");
+                        String commandText_last = J221.getText();
+                        commandText_last += input.replaceAll(" ", "") +  "= \n" + commandText+ "\n";
+                        J221.setText(commandText_last);
+                    }catch(MatrixArithException err){
+                        System.out.println(err.toString());
+                        this.append("Matrix \""+name+"\" cannot be inversed.");
+                        this.append(">>");
+                        String commandText_last = J221.getText();
+                        commandText_last += input +  " = \n" + "Error!" + "\n\n";
+                        J221.setText(commandText_last);
+                    }
                 } else if (isStandardExpression(input)) {
+                    Matrix ouputMatrix= null;
+                   
+                    try{
+                        ouputMatrix = evaluateExpression(input + "=");
 
+                        String commandText = "";
+                        NumberFormat nFormat=NumberFormat.getNumberInstance(); 
+					    nFormat.setMaximumFractionDigits(2);
+                        nFormat.setMinimumFractionDigits(2);
+                        for(int i = 0 ; i < ouputMatrix.array.length;i++){
+                            for(int j = 0 ; j < ouputMatrix.array[0].length;j++){
+                                commandText += nFormat.format(ouputMatrix.array[i][j] +" ");
+                            }
+                            commandText += "\n";
+                        }
+                        this.append(commandText);
+                        this.append("\n\n");
+                        this.append(">>");
+                        String commandText_last = J221.getText();
+                        commandText_last += input.replaceAll(" ", "") +  "= \n" + commandText+ "\n";
+                        J221.setText(commandText_last);
+                    }catch(MatrixArithException err){
+                        System.out.println(err.toString());
+                        String err_msg = err.toString();
+                        int l_pos = err_msg.lastIndexOf(":")+2;
+                        int r_pos = err_msg.length();
+                        err_msg = err_msg.substring(l_pos, r_pos);
+
+                        this.append(err_msg);
+                        this.append("\n\n");
+                        this.append(">>");
+                        String commandText_last = J221.getText();
+                        commandText_last += input +  " = \n" + "Error!" + "\n\n";
+                        J221.setText(commandText_last);
+                    }
                 } else {
-                    this.append("command \"" + input + "\" " + "not found");
+                    this.append("Command \"" + input + "\" is not found!");
                     this.append("\n\n");
                     this.append(">>");
                 }
@@ -304,7 +401,7 @@ public class MainWindow extends JFrame {
         setIconImage(img);
         setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         setResizable(false);
-        setLocation(null);// Place the main window in the middle.
+        setLocationRelativeTo(null);// Place the main window in the middle.
         setLayout(null);// Clear the default layout.
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -323,14 +420,6 @@ public class MainWindow extends JFrame {
 
         /**
          * Set the menu bar.
-          
-                    ┌── linewrapItem
-            ┌── setMenu 
-            |       └── resetItem 
-        menuBar 
-            |       ┌── helpItem
-            └── getMenu 
-                    └── abouItem
          */
         JMenuBar menuBar = new JMenuBar();
         menuBar.setBackground(Color.white);
@@ -341,11 +430,11 @@ public class MainWindow extends JFrame {
         JMenuItem resetItem = new JMenuItem("Reset");
         JMenuItem helpItem = new JMenuItem("Help");
         JMenuItem aboutItem = new JMenuItem("About");
+        linewrapItem.setSelected(false);
         setMenu.add(linewrapItem);
         setMenu.add(resetItem);
         getMenu.add(helpItem);
         getMenu.add(aboutItem);
-        linewrapItem.setSelected(false);
         menuBar.add(setMenu);
         menuBar.add(getMenu);
 
@@ -386,6 +475,7 @@ public class MainWindow extends JFrame {
             }
         });
 
+        textBuffer = new StringBuffer();
         workspace = new CmdTextArea();
         workspace.addKeyListener(workspace);
         workspace.addCaretListener(workspace);
