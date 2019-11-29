@@ -85,6 +85,211 @@ public class MainWindow extends JFrame {
             return false;
         }
 
+        // Final check for an legal expression,using stack.
+        boolean Match(String exp) {
+            MatrixStack<String> stk = new MatrixStack<>();
+            int pos = 0;
+            String exp_temp = "";
+            while (pos != exp.length()) {
+                if (exp.charAt(pos) == '(') {
+                    exp_temp += exp.charAt(pos);
+                    stk.push(exp_temp);
+                    pos++;
+                    exp_temp = "";
+                } else if (exp.charAt(pos) == ')') {
+                    if (stk.empty()) {
+                        return false;
+                    } else {
+                        stk.pop();
+                        pos++;
+                    }
+                }
+            }
+            return stk.empty();
+        }
+
+        public String transToStandardExpression(String rawExp) throws ExpressionInputException {
+            String standardExp = rawExp;
+            // Grammar analysis.
+            for (int i = 0; i < standardExp.length(); i++) {
+                if ((standardExp.charAt(i) >= 'a' && standardExp.charAt(i) <= 'z')
+                        || (standardExp.charAt(i) >= 'A' && standardExp.charAt(i) <= 'Z')
+                        || (standardExp.charAt(i) >= '0' && standardExp.charAt(i) <= '9')
+                        || standardExp.charAt(i) == '+' || standardExp.charAt(i) == '-' || standardExp.charAt(i) == '*'
+                        || standardExp.charAt(i) == '/' || standardExp.charAt(i) == '('
+                        || standardExp.charAt(i) == ')') {
+                } else {
+                    throw new ExpressionInputException("Unrecognized characters exist!");
+                }
+            }
+            standardExp = standardExp.replaceAll(" ", "");
+            Pattern ptn = Pattern.compile("[A-Za-z][A-Za-z\\d]*");
+            Matcher mtr = ptn.matcher(standardExp);
+            standardExp = mtr.replaceAll("i");
+            return standardExp;
+        }
+
+        public boolean isLegalExpression(String rawExp) {
+            boolean isLegal = true;
+            String legalExp = rawExp;
+            for (int i = 0; i < legalExp.length(); i++) {
+                if ((legalExp.charAt(i) >= 'a' && legalExp.charAt(i) <= 'z')
+                        || (legalExp.charAt(i) >= 'A' && legalExp.charAt(i) <= 'Z')
+                        || (legalExp.charAt(i) >= '0' && legalExp.charAt(i) <= '9') || legalExp.charAt(i) == '+'
+                        || legalExp.charAt(i) == '-' || legalExp.charAt(i) == '*' || legalExp.charAt(i) == '/'
+                        || legalExp.charAt(i) == '(' || legalExp.charAt(i) == ')') {
+                } else {
+                    // Splice ' '
+                    if (legalExp.charAt(i) == ' ') {
+                        legalExp = legalExp.substring(0, i) + legalExp.substring(i + 1, legalExp.length());
+                        i--;
+                    } else {
+                        isLegal = false;
+                        break;
+                    }
+                }
+            }
+            if (isLegal) {
+                isLegal = false;
+                for (int i = 0; i < legalExp.length(); i++) {
+                    if (i == 0) {
+                        if (legalExp.charAt(i) == ')' || legalExp.charAt(i) == '+' || legalExp.charAt(i) == '-'
+                                || legalExp.charAt(i) == '*' || legalExp.charAt(i) == '/') {
+
+                            isLegal = false;
+                            break;
+                        }
+                    } else if (i == legalExp.length() - 1) {
+                        if (legalExp.charAt(i) == '(' || legalExp.charAt(i) == '+' || legalExp.charAt(i) == '-'
+                                || legalExp.charAt(i) == '*' || legalExp.charAt(i) == '/') {
+
+                            isLegal = false;
+                            break;
+                        }
+                    } else {
+                        if (legalExp.charAt(i) == '+' || legalExp.charAt(i) == '-' || legalExp.charAt(i) == '*'
+                                || legalExp.charAt(i) == '/') {
+                            if (legalExp.charAt(i - 1) == '+' || legalExp.charAt(i - 1) == '-'
+                                    || legalExp.charAt(i - 1) == '*' || legalExp.charAt(i - 1) == '/'
+                                    || legalExp.charAt(i - 1) == '(' ||
+
+                                    legalExp.charAt(i + 1) == '+' || legalExp.charAt(i + 1) == '-'
+                                    || legalExp.charAt(i + 1) == '*' || legalExp.charAt(i + 1) == '/'
+                                    || legalExp.charAt(i + 1) == ')') {
+
+                                isLegal = false;
+                                break;
+                            }
+
+                        } else if (legalExp.charAt(i) == '(') {
+                            if (legalExp.charAt(i - 1) == '(' || legalExp.charAt(i - 1) == '+'
+                                    || legalExp.charAt(i - 1) == '-' || legalExp.charAt(i - 1) == '*'
+                                    || legalExp.charAt(i - 1) == '/') {
+                            } else {
+                                isLegal = false;
+                                break;
+                            }
+                        } else if (legalExp.charAt(i) == ')') {
+                            if (legalExp.charAt(i - 1) == ')' || legalExp.charAt(i - 1) == '+'
+                                    || legalExp.charAt(i - 1) == '-' || legalExp.charAt(i - 1) == '*'
+                                    || legalExp.charAt(i - 1) == '/') {
+                            } else {
+                                isLegal = false;
+                                break;
+                            }
+                        } else {
+                            if (legalExp.charAt(i - 1) == ')' || legalExp.charAt(i + 1) == '(') {
+                                isLegal = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (!Match(legalExp)) {
+                    isLegal = false;
+                }
+                return isLegal;
+            }
+            return false;
+        }
+
+        public boolean isStandardExpression(String expression) {
+
+            String exp_temp = expression;
+            try {
+                exp_temp = transToStandardExpression(expression);
+            } catch (ExpressionInputException e) {
+                System.out.println(e.toString());
+                return false;
+            }
+
+            for (int i = 0; i < exp_temp.length(); i++) {
+                if (exp_temp.charAt(i) == '+' || exp_temp.charAt(i) == '-' || exp_temp.charAt(i) == '*'
+                        || exp_temp.charAt(i) == '/' || exp_temp.charAt(i) == '(' || exp_temp.charAt(i) == ')'
+                        || exp_temp.charAt(i) == 'i' || exp_temp.charAt(i) == '#'
+
+                ) {
+                } else {
+                    return false;
+                }
+            }
+
+            // Special judge for "()"
+            if (Pattern.matches(".*\\(\\).*", exp_temp)) {
+                return false;
+            }
+
+            // Special judge for "++" or "--" or "**" or "//"
+            if (Pattern.matches(".*[+\\-*/][+\\-*/].*", exp_temp)) {
+                return false;
+            }
+
+            int[][] opRelation = { { 2, 2, 1, 1, 1, 2, 1, 2 }, { 2, 2, 1, 1, 1, 2, 1, 2 }, { 2, 2, 2, 2, 1, 2, 1, 2 },
+                    { 2, 2, 2, 2, 1, 2, 1, 2 }, { 1, 1, 1, 1, 1, 0, 1, -1 }, { 2, 2, 2, 2, -1, 2, -1, 2 },
+                    { 2, 2, 2, 2, -1, 2, -1, 2 }, { 1, 1, 1, 1, 1, -1, 1, 0 } };
+            String opList = "+-*/()i#";
+
+            String exp_target = exp_temp + "#";
+            boolean end = false;
+            MatrixStack<String> stk = new MatrixStack<>();
+            stk.push("#");
+            int l_pos, r_pos;
+            String l_temp, r_temp;
+            while (!end) {
+                l_temp = stk.top();
+                r_temp = exp_target.charAt(0) + "";
+                l_pos = opList.indexOf(l_temp);
+                r_pos = opList.indexOf(r_temp);
+                if (opRelation[l_pos][r_pos] == 0 || opRelation[l_pos][r_pos] == 1) {
+                    stk.push(r_temp);
+                    exp_target = exp_target.substring(1, exp_target.length());
+                } else if (opRelation[l_pos][r_pos] == 2) {
+                    r_temp = stk.pop();
+                    l_temp = stk.pop();
+                    l_pos = opList.indexOf(l_temp);
+                    r_pos = opList.indexOf(r_temp);
+                    while (opRelation[l_pos][r_pos] == 0) {
+                        r_temp = l_temp;
+                        l_temp = stk.pop();
+                        l_pos = opList.indexOf(l_temp);
+                        r_pos = opList.indexOf(r_temp);
+                    }
+                    stk.push(l_temp);
+                } else if (opRelation[l_pos][r_pos] == -1) {
+                    System.out.println("Illegal expression!");
+                    end = true;
+                    return false;
+                }
+
+                if (exp_target.length() == 0) {
+                    System.err.println("Legal expression!");
+                    return true;
+                }
+            }
+            System.out.println("Illegal expression!");
+            return false;
+        }
+
         public Matrix isStandardMatrix(String input) {
             int row = 0;
             for (int i = 0; i < input.length(); i++) {
@@ -145,11 +350,6 @@ public class MainWindow extends JFrame {
             return new Matrix(name, outputArray);
         }
 
-        public boolean isStandardExpression(String expression) {
-            // TO DO
-            return false;
-        }
-
         public Matrix evaluateExpression(String expression) throws MatrixArithException {
             Matrix outputMatrix = null;
             // TO DO
@@ -191,13 +391,12 @@ public class MainWindow extends JFrame {
                 if (input.equals("exit")) {
                     this.append("Bye!");
                     System.exit(0);
-                }
-                else if(input.equals("cls")||input.equals("clear")||input.equals("CLS")||input.equals("CLEAR")){
+                } else if (input.equals("cls") || input.equals("clear") || input.equals("CLS")
+                        || input.equals("CLEAR")) {
                     this.setText("");
                     textBuffer.delete(0, textBuffer.length());
                     this.append(">>");
-                }
-                 else if (input.equals("del all") || input.equals("delete all") || input.equals("DEL ALL")
+                } else if (input.equals("del all") || input.equals("delete all") || input.equals("DEL ALL")
                         || input.equals("DELETE ALL")) {
                     J211.setText("");
                     ptr_workspace = 0;
@@ -289,33 +488,32 @@ public class MainWindow extends JFrame {
                         this.append(">>");
                     }
                 } else if (Pattern.matches(pattern_inv, input)) {
-                    String name="";
-                    Matrix ouputMatrix= null;
-                    try{
+                    String name = "";
+                    Matrix ouputMatrix = null;
+                    try {
                         int l_pos = input.indexOf("(");
                         int r_pos = input.indexOf(")");
-                        name = input.substring(l_pos+1,r_pos).replace(" ", "");
+                        name = input.substring(l_pos + 1, r_pos).replace(" ", "");
 
-                        for(int i = 0 ; i <ptr_workspace;i++){
-                            if(matrixBuffer[i].name.equals(name)){
+                        for (int i = 0; i < ptr_workspace; i++) {
+                            if (matrixBuffer[i].name.equals(name)) {
                                 ouputMatrix = MatrixArith.inv(matrixBuffer[i]);
                                 break;
-                            }
-                            else{
-                                if(i == ptr_workspace -1){
+                            } else {
+                                if (i == ptr_workspace - 1) {
                                     ouputMatrix = new Matrix("null", null);
-                                    throw new MatrixArithException("Matrix \""+name+"\" is undefined!");
+                                    throw new MatrixArithException("Matrix \"" + name + "\" is undefined!");
                                 }
                             }
                         }
 
                         String commandText = "";
-                        NumberFormat nFormat=NumberFormat.getNumberInstance(); 
-					    nFormat.setMaximumFractionDigits(2);
-					    nFormat.setMinimumFractionDigits(2);
-                        for(int i = 0 ; i < ouputMatrix.array.length;i++){
-                            for(int j = 0 ; j < ouputMatrix.array[0].length;j++){
-                                commandText += nFormat.format(ouputMatrix.array[i][j] +" ");
+                        NumberFormat nFormat = NumberFormat.getNumberInstance();
+                        nFormat.setMaximumFractionDigits(2);
+                        nFormat.setMinimumFractionDigits(2);
+                        for (int i = 0; i < ouputMatrix.array.length; i++) {
+                            for (int j = 0; j < ouputMatrix.array[0].length; j++) {
+                                commandText += nFormat.format(ouputMatrix.array[i][j] + " ");
                             }
                             commandText += "\n";
                         }
@@ -323,29 +521,29 @@ public class MainWindow extends JFrame {
                         this.append("\n\n");
                         this.append(">>");
                         String commandText_last = J221.getText();
-                        commandText_last += input.replaceAll(" ", "") +  "= \n" + commandText+ "\n";
+                        commandText_last += input.replaceAll(" ", "") + "= \n" + commandText + "\n";
                         J221.setText(commandText_last);
-                    }catch(MatrixArithException err){
+                    } catch (MatrixArithException err) {
                         System.out.println(err.toString());
-                        this.append("Matrix \""+name+"\" cannot be inversed.");
+                        this.append("Matrix \"" + name + "\" cannot be inversed.");
                         this.append(">>");
                         String commandText_last = J221.getText();
-                        commandText_last += input +  " = \n" + "Error!" + "\n\n";
+                        commandText_last += input + " = \n" + "Error!" + "\n\n";
                         J221.setText(commandText_last);
                     }
                 } else if (isStandardExpression(input)) {
-                    Matrix ouputMatrix= null;
-                   
-                    try{
+                    Matrix ouputMatrix = null;
+
+                    try {
                         ouputMatrix = evaluateExpression(input + "=");
 
                         String commandText = "";
-                        NumberFormat nFormat=NumberFormat.getNumberInstance(); 
-					    nFormat.setMaximumFractionDigits(2);
+                        NumberFormat nFormat = NumberFormat.getNumberInstance();
+                        nFormat.setMaximumFractionDigits(2);
                         nFormat.setMinimumFractionDigits(2);
-                        for(int i = 0 ; i < ouputMatrix.array.length;i++){
-                            for(int j = 0 ; j < ouputMatrix.array[0].length;j++){
-                                commandText += nFormat.format(ouputMatrix.array[i][j] +" ");
+                        for (int i = 0; i < ouputMatrix.array.length; i++) {
+                            for (int j = 0; j < ouputMatrix.array[0].length; j++) {
+                                commandText += nFormat.format(ouputMatrix.array[i][j] + " ");
                             }
                             commandText += "\n";
                         }
@@ -353,12 +551,12 @@ public class MainWindow extends JFrame {
                         this.append("\n\n");
                         this.append(">>");
                         String commandText_last = J221.getText();
-                        commandText_last += input.replaceAll(" ", "") +  "= \n" + commandText+ "\n";
+                        commandText_last += input.replaceAll(" ", "") + "= \n" + commandText + "\n";
                         J221.setText(commandText_last);
-                    }catch(MatrixArithException err){
+                    } catch (MatrixArithException err) {
                         System.out.println(err.toString());
                         String err_msg = err.toString();
-                        int l_pos = err_msg.lastIndexOf(":")+2;
+                        int l_pos = err_msg.lastIndexOf(":") + 2;
                         int r_pos = err_msg.length();
                         err_msg = err_msg.substring(l_pos, r_pos);
 
@@ -366,7 +564,7 @@ public class MainWindow extends JFrame {
                         this.append("\n\n");
                         this.append(">>");
                         String commandText_last = J221.getText();
-                        commandText_last += input +  " = \n" + "Error!" + "\n\n";
+                        commandText_last += input + " = \n" + "Error!" + "\n\n";
                         J221.setText(commandText_last);
                     }
                 } else {
@@ -546,7 +744,7 @@ public class MainWindow extends JFrame {
         J221.setLineWrap(true);
         J221.setVisible(true);
 
-        JButton J222 = new JButton("Clear Workspace");
+        JButton J222 = new JButton("Clear History");
         J222.setFont(new Font("微软雅黑", Font.BOLD, BUTTON_FONT_SIZE));
         J222.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {

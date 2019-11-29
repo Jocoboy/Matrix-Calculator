@@ -5,3 +5,11 @@ menuBar
     |       ┌── helpItem
     └── getMenu 
             └── abouItem
+
+
+            ┌── JS1     ┌── J211
+mainWindow——     ┌── J21 
+            └── J2      └── J212
+                 |      ┌── J221
+                 └── J22
+                        └── J222
