@@ -85,8 +85,27 @@ public class MainWindow extends JFrame {
             return false;
         }
 
+        private boolean canPush(char top, char out) {
+            if (top == '(') {
+                return true;
+            }
+            if ((top == '+' || top == '-') && (out == '*' || out == '/')) {
+                return true;
+            }
+            if ((top == '+' || top == '-') && (out == '+' || out == '-')) {
+                return false;
+            }
+            if ((top == '*' || top == '/') && (out == '*' || out == '/')) {
+                return false;
+            }
+            if ((top == '*' || top == '/') && (out == '+' || out == '-')) {
+                return false;
+            }
+            return true;
+        }
+
         // Final check for an legal expression,using stack.
-        boolean Match(String exp) {
+        private boolean Match(String exp) {
             MatrixStack<String> stk = new MatrixStack<>();
             int pos = 0;
             String exp_temp = "";
@@ -108,7 +127,7 @@ public class MainWindow extends JFrame {
             return stk.empty();
         }
 
-        public String transToStandardExpression(String rawExp) throws ExpressionInputException {
+        private String transToStandardExpression(String rawExp) throws ExpressionInputException {
             String standardExp = rawExp;
             // Grammar analysis.
             for (int i = 0; i < standardExp.length(); i++) {
@@ -352,8 +371,151 @@ public class MainWindow extends JFrame {
 
         public Matrix evaluateExpression(String expression) throws MatrixArithException {
             Matrix outputMatrix = null;
-            // TO DO
 
+            if (ptr_workspace == 0) {
+                outputMatrix = new Matrix("null", null);
+                throw new MatrixArithException(
+                        "Matrix \"" + expression.substring(0, expression.length() - 1) + "\" is undefined!");
+            }
+
+            int pos = 0, pos_temp = 0;
+            String name = "";
+            char ch = expression.charAt(pos++);
+            MatrixStack<String> op_stk = new MatrixStack<>();
+            MatrixStack<Matrix> matrix_stk = new MatrixStack<>();
+            while (ch != '=') {
+                if (ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z' || ch >= '0' && ch <= '9' || ch == '_') {
+                    pos_temp = pos;
+                    name += ch;
+                    while ((expression.charAt(pos) >= 'a' && expression.charAt(pos) <= 'z')
+                            || (expression.charAt(pos) >= 'A' && expression.charAt(pos) <= 'Z')
+                            || (expression.charAt(pos) >= '0' && expression.charAt(pos) <= '9')
+                            || expression.charAt(pos) == '_') {
+                        name += ch;
+                        pos_temp++;
+                    }
+                    for (int i = 0; i < ptr_workspace; i++) {
+                        if (matrixBuffer[i].name.equals(name)) {
+                            matrix_stk.push(matrixBuffer[i]);
+                            break;
+                        } else {
+                            if (i == ptr_workspace - 1) {
+                                outputMatrix = new Matrix("null", null);
+                                throw new MatrixArithException("Matrix \"" + name + "\" is undefined!");
+                            }
+                        }
+                    }
+                    name = "";
+                    pos = pos_temp;
+                }
+                if (ch == '(') {
+                    op_stk.push(ch + "");
+                }
+                if (ch == ')') {
+                    char ch_t = '\0';
+                    if (!op_stk.empty()) {
+                        ch_t = op_stk.top().charAt(0);
+                    }
+                    while (ch_t != '(') {
+                        Matrix a = matrix_stk.pop();
+                        Matrix b = matrix_stk.pop();
+                        char op = op_stk.pop().charAt(0);
+
+                        Matrix mtx = null;
+
+                        try {
+                            if (op == '+') {
+                                mtx = MatrixArith.add(b, a);
+                            }
+                            if (op == '-') {
+                                mtx = MatrixArith.sub(b, a);
+                            }
+                            if (op == '*') {
+                                mtx = MatrixArith.mul(b, a);
+                            }
+                            if (op == '/') {
+                                mtx = MatrixArith.div(b, a);
+                            }
+                        } catch (MatrixArithException e) {
+                            System.out.println(e.toString());
+                            outputMatrix = new Matrix("null", null);
+                            throw new MatrixArithException(e.toString());
+                        }
+
+                        matrix_stk.push(mtx);
+                        if (!op_stk.empty()) {
+                            ch_t = op_stk.top().charAt(0);
+                        }
+                        if (ch_t == '(') {
+                            op_stk.pop();
+                        }
+                    }
+
+                }
+                if (ch == '+' || ch == '-' || ch == '*' || ch == '/') {
+                    char ch_t;
+                    if (op_stk.empty()) {
+                        op_stk.push(ch + "");
+                    } else {
+                        ch_t = op_stk.top().charAt(0);
+                        if (canPush(ch_t, ch)) {
+                            Matrix a = matrix_stk.pop();
+                            Matrix b = matrix_stk.pop();
+                            char op = op_stk.pop().charAt(0);
+                            Matrix mtx = null;
+                            try {
+                                if (op == '+') {
+                                    mtx = MatrixArith.add(b, a);
+                                }
+                                if (op == '-') {
+                                    mtx = MatrixArith.sub(b, a);
+                                }
+                                if (op == '*') {
+                                    mtx = MatrixArith.mul(b, a);
+                                }
+                                if (op == '/') {
+                                    mtx = MatrixArith.div(b, a);
+                                }
+                            } catch (MatrixArithException e) {
+                                System.out.println(e.toString());
+                                outputMatrix = new Matrix("null", null);
+                                throw new MatrixArithException(e.toString());
+                            }
+                            op_stk.push(ch + "");
+                            matrix_stk.push(mtx);
+                        } else {
+                            op_stk.push(ch + "");
+                        }
+                    }
+                }
+                ch = expression.charAt(pos++);
+            }
+            while (!op_stk.empty()) {
+                Matrix a = matrix_stk.pop();
+                Matrix b = matrix_stk.pop();
+                char op = op_stk.pop().charAt(0);
+                Matrix mtx = null;
+                try {
+                    if (op == '+') {
+                        mtx = MatrixArith.add(b, a);
+                    }
+                    if (op == '-') {
+                        mtx = MatrixArith.sub(b, a);
+                    }
+                    if (op == '*') {
+                        mtx = MatrixArith.mul(b, a);
+                    }
+                    if (op == '/') {
+                        mtx = MatrixArith.div(b, a);
+                    }
+                } catch (MatrixArithException e) {
+                    System.out.println(e.toString());
+                    outputMatrix = new Matrix("null", null);
+                    throw new MatrixArithException(e.toString());
+                }
+                matrix_stk.push(mtx);
+            }
+            outputMatrix = matrix_stk.pop();
             return outputMatrix;
         }
 
