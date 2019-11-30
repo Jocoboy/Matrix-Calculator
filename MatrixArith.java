@@ -160,7 +160,7 @@ public class MatrixArith {
                 int k;
                 // Ensure that the element located in (i, i) is non-zero.
                 if (expandArray[i][i] == 0) {
-                    for (k = i + 1; k < row; k++) {
+                    for (k = i ; k < row; k++) {
                         if (expandArray[k][i] != 0) {
                             // Swap row i and row k.
                             for (int j = 0; j < row * 2; j++) {
@@ -185,8 +185,9 @@ public class MatrixArith {
                 // (A E) -> (E A-¹)
                 for (k = 0; k < row; k++) {
                     if (k != i) {
+                        double temp = expandArray[k][i];
                         for (int j = 0; j < row * 2; j++) {
-                            expandArray[k][j] = expandArray[k][j] - expandArray[k][i] * expandArray[i][j];
+                            expandArray[k][j] = expandArray[k][j] - temp * expandArray[i][j];
                         }
                     }
                 }

@@ -18,8 +18,8 @@ public class MainWindow extends JFrame {
 
     private static final long serialVersionUID = 1L;
 
-    private static JTextArea J211;
-    private static JTextArea J221;
+    private static JTextArea J212;
+    private static JTextArea J222;
     private static CmdTextArea workspace;
     private static int ptr_workspace;
 
@@ -322,6 +322,7 @@ public class MainWindow extends JFrame {
             int splitPos = input.indexOf("[");
             String p1 = input.substring(0, splitPos).replaceAll(" ", "");
             String name = p1.substring(0, p1.length() - 1);
+            //System.out.println(name);
             String p2 = input.substring(splitPos, input.length());
 
             int ptr = 0, ptr_temp = 0, pos_temp = 0, columns = 0;
@@ -350,7 +351,7 @@ public class MainWindow extends JFrame {
                 }
             }
 
-            int column = 0;
+            int column = columnsForEach[0];
             for (int i = 1; i < row; i++) {
                 // The number of row is not equal to column.
                 if (columnsForEach[i] != column) {
@@ -550,7 +551,7 @@ public class MainWindow extends JFrame {
                 textBuffer.append(input);
                 textBuffer.append("\n");
                 /*********************** Command***************************** */
-                if (input.equals("exit")) {
+                if (input.equals("exit")||input.equals("EXIT")) {
                     this.append("Bye!");
                     System.exit(0);
                 } else if (input.equals("cls") || input.equals("clear") || input.equals("CLS")
@@ -560,8 +561,10 @@ public class MainWindow extends JFrame {
                     this.append(">>");
                 } else if (input.equals("del all") || input.equals("delete all") || input.equals("DEL ALL")
                         || input.equals("DELETE ALL")) {
-                    J211.setText("");
+                    J212.setText("");
                     ptr_workspace = 0;
+                    this.append("\n\n");
+                    this.append(">>");
                 } else if (input.equals("about") || input.equals("ABOUT")) {
                     this.append(input);
                     this.append("\n\n");
@@ -611,25 +614,25 @@ public class MainWindow extends JFrame {
                         if (ptr_workspace == 0) {
                             matrixBuffer[ptr_workspace++] = matrix;
                         }
-                        String J211Text = "";
-                        J211.setText("");
+                        String J212Text = "";
+                        J212.setText("");
                         for (int i = 0; i < ptr_workspace; i++) {
-                            J211Text += matrixBuffer[i].name + " = ";
+                            J212Text += matrixBuffer[i].name + " = ";
                             for (int j = 0; j < matrixBuffer[i].array.length; j++) {
                                 for (int k = 0; k < matrixBuffer[i].array[0].length; k++) {
-                                    J211Text += nFormat.format(matrixBuffer[i].array[j][k]) + " ";
+                                    J212Text += nFormat.format(matrixBuffer[i].array[j][k]) + " ";
                                 }
-                                J211Text += "\n";
+                                J212Text += "\n";
                                 // Append blank areas to n-1 rows.
                                 if (j != matrixBuffer[i].array.length - 1) {
-                                    for (int len = 0; len < matrixBuffer[i].name.length() + 4; len++) {
-                                        J211Text += " ";
+                                    for (int len = 0; len < matrixBuffer[i].name.length() + 3; len++) {
+                                        J212Text += " ";
                                     }
                                 }
                             }
-                            J211Text += "\n";
+                            J212Text += "\n";
                         }
-                        J211.setText(J211Text);
+                        J212.setText(J212Text);
 
                         String commandText = "";
                         commandText += matrix.name + " = ";
@@ -640,7 +643,7 @@ public class MainWindow extends JFrame {
                             commandText += "\n";
                             // Append blank areas to n-1 rows.
                             if (j != matrix.array.length - 1) {
-                                for (int len = 0; len < matrix.name.length() + 4; len++) {
+                                for (int len = 0; len < matrix.name.length() + 3; len++) {
                                     commandText += " ";
                                 }
                             }
@@ -675,23 +678,24 @@ public class MainWindow extends JFrame {
                         nFormat.setMinimumFractionDigits(2);
                         for (int i = 0; i < ouputMatrix.array.length; i++) {
                             for (int j = 0; j < ouputMatrix.array[0].length; j++) {
-                                commandText += nFormat.format(ouputMatrix.array[i][j] + " ");
+                                commandText += nFormat.format(ouputMatrix.array[i][j]) + " ";
                             }
                             commandText += "\n";
                         }
                         this.append(commandText);
                         this.append("\n\n");
                         this.append(">>");
-                        String commandText_last = J221.getText();
+                        String commandText_last = J222.getText();
                         commandText_last += input.replaceAll(" ", "") + "= \n" + commandText + "\n";
-                        J221.setText(commandText_last);
+                        J222.setText(commandText_last);
                     } catch (MatrixArithException err) {
                         System.out.println(err.toString());
                         this.append("Matrix \"" + name + "\" cannot be inversed.");
+                        this.append("\n\n");
                         this.append(">>");
-                        String commandText_last = J221.getText();
+                        String commandText_last = J222.getText();
                         commandText_last += input + " = \n" + "Error!" + "\n\n";
-                        J221.setText(commandText_last);
+                        J222.setText(commandText_last);
                     }
                 } else if (isStandardExpression(input)) {
                     Matrix ouputMatrix = null;
@@ -705,16 +709,16 @@ public class MainWindow extends JFrame {
                         nFormat.setMinimumFractionDigits(2);
                         for (int i = 0; i < ouputMatrix.array.length; i++) {
                             for (int j = 0; j < ouputMatrix.array[0].length; j++) {
-                                commandText += nFormat.format(ouputMatrix.array[i][j] + " ");
+                                commandText += nFormat.format(ouputMatrix.array[i][j]) + " ";
                             }
                             commandText += "\n";
                         }
                         this.append(commandText);
                         this.append("\n\n");
                         this.append(">>");
-                        String commandText_last = J221.getText();
+                        String commandText_last = J222.getText();
                         commandText_last += input.replaceAll(" ", "") + "= \n" + commandText + "\n";
-                        J221.setText(commandText_last);
+                        J222.setText(commandText_last);
                     } catch (MatrixArithException err) {
                         System.out.println(err.toString());
                         String err_msg = err.toString();
@@ -725,9 +729,9 @@ public class MainWindow extends JFrame {
                         this.append(err_msg);
                         this.append("\n\n");
                         this.append(">>");
-                        String commandText_last = J221.getText();
+                        String commandText_last = J222.getText();
                         commandText_last += input + " = \n" + "Error!" + "\n\n";
-                        J221.setText(commandText_last);
+                        J222.setText(commandText_last);
                     }
                 } else {
                     this.append("Command \"" + input + "\" is not found!");
@@ -879,43 +883,43 @@ public class MainWindow extends JFrame {
         J2.add(J21);
         J2.add(J22);
 
-        J211 = new JTextArea();
-        JScrollPane JS211 = new JScrollPane(J211, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+        J212 = new JTextArea();
+        JScrollPane JS211 = new JScrollPane(J212, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        J211.setFont(new Font("宋体", Font.BOLD, WORKSPACE_FONT_SIZE));
-        J211.setEditable(false);
-        J211.setLineWrap(true);
-        J211.setVisible(true);
+        J212.setFont(new Font("宋体", Font.BOLD, WORKSPACE_FONT_SIZE));
+        J212.setEditable(false);
+        J212.setLineWrap(true);
+        J212.setVisible(true);
 
-        JButton J212 = new JButton("Clear Workspace");
-        J212.setFont(new Font("微软雅黑", Font.BOLD, BUTTON_FONT_SIZE));
-        J212.addActionListener(new ActionListener() {
+        JButton J213 = new JButton("Clear Workspace");
+        J213.setFont(new Font("微软雅黑", Font.BOLD, BUTTON_FONT_SIZE));
+        J213.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                J211.setText("");
+                J212.setText("");
             }
         });
 
         J21.add(JS211, BorderLayout.CENTER);
-        J21.add(J212, BorderLayout.SOUTH);
+        J21.add(J213, BorderLayout.SOUTH);
 
-        J221 = new JTextArea();
-        JScrollPane JS221 = new JScrollPane(J221, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+        J222 = new JTextArea();
+        JScrollPane JS221 = new JScrollPane(J222, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        J221.setFont(new Font("宋体", Font.BOLD, WORKSPACE_FONT_SIZE));
-        J221.setEditable(false);
-        J221.setLineWrap(true);
-        J221.setVisible(true);
+        J222.setFont(new Font("宋体", Font.BOLD, WORKSPACE_FONT_SIZE));
+        J222.setEditable(false);
+        J222.setLineWrap(true);
+        J222.setVisible(true);
 
-        JButton J222 = new JButton("Clear History");
-        J222.setFont(new Font("微软雅黑", Font.BOLD, BUTTON_FONT_SIZE));
-        J222.addActionListener(new ActionListener() {
+        JButton J223 = new JButton("Clear History");
+        J223.setFont(new Font("微软雅黑", Font.BOLD, BUTTON_FONT_SIZE));
+        J223.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                J221.setText("");
+                J222.setText("");
             }
         });
 
         J22.add(JS221, BorderLayout.CENTER);
-        J22.add(J222, BorderLayout.SOUTH);
+        J22.add(J223, BorderLayout.SOUTH);
 
         setVisible(true);
     }
