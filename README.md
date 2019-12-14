@@ -36,7 +36,7 @@
 - For other commands
     ```
     >>cls (to clear Cmd Text Area)
-    >>del all (to clear both Cmd Text Area and Workspace)
+    >>del all (to clear Workspace)
     >>help (to see Help Window)
     >>about (to see About Window)
     >>exit (to close Application)

@@ -38,7 +38,7 @@ public class Help extends JDialog {
         ">>A/B (refer to A*inv(B))\n\n"+
         "For other commands:\n"+
         ">>cls (to clear Cmd Text Area)\n"+
-        ">>del all (to clear both Cmd Text Area and Workspace)\n"+
+        ">>del all (to clear Workspace)\n"+
         ">>help (to see Help Window)\n"+
         ">>about (to see About Window)\n"+
         ">>exit (to close Application)\n\n"+
